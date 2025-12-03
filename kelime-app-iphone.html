@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Kelime Çalışma Uygulamam</title>
+
+  <!-- iPhone / mobil için önemli meta tag'ler -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      background: #f5f5f5;
+      color: #222;
+    }
+    header {
+      background: #1e88e5;
+      color: white;
+      padding: 16px 24px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+    main {
+      max-width: 980px;
+      margin: 24px auto;
+      padding: 0 16px 32px;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 16px;
+    }
+    .card h2 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    input[type="text"], select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+      font-size: 16px; /* iOS zoom'u engellemek için 16px */
+      box-sizing: border-box;
+    }
+    button {
+      border: none;
+      padding: 10px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 16px; /* iOS için 16px */
+      margin-right: 6px;
+      margin-bottom: 6px;
+      -webkit-tap-highlight-color: rgba(0,0,0,0);
+    }
+    button.primary {
+      background: #1e88e5;
+      color: white;
+    }
+    button.secondary {
+      background: #e0e0e0;
+    }
+    button.danger {
+      background: #e53935;
+      color: white;
+    }
+    .tabs {
+      margin-bottom: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .tabs button {
+      background: transparent;
+      border-radius: 0;
+      border-bottom: 2px solid transparent;
+    }
+    .tabs button.active {
+      border-bottom-color: #1e88e5;
+      font-weight: 600;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #fafafa;
+      font-weight: 600;
+    }
+    .empty-state {
+      font-size: 14px;
+      color: #666;
+    }
+    .list-header-line {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .list-name-input {
+      max-width: 260px;
+      font-size: 16px;
+      padding: 6px 8px;
+    }
+    .tab-content {
+      position: relative;
+    }
+
+    /* Flashcard alanı 3D perspektif için */
+    #flashcardArea {
+      perspective: 1000px;
+    }
+
+    .flashcard {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: 600;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #bbdefb, #e3f2fd);
+      cursor: pointer;
+      user-select: none;
+      min-height: 120px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.4s;
+    }
+    .flashcard:active {
+      transform: scale(0.98);
+    }
+    .flashcard.flipped {
+      transform: rotateX(180deg);
+    }
+    .flashcard-face {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      box-sizing: border-box;
+    }
+    .flashcard-face span {
+      display: block;
+      padding: 0 8px;
+    }
+    .flashcard-face small {
+      margin-top: 12px;
+      font-size: 12px;
+      font-weight: 400;
+    }
+    .flashcard-back {
+      transform: rotateX(180deg);
+    }
+
+    .list-selectors {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .list-selectors label {
+      font-weight: 400;
+      font-size: 13px;
+      background: #f0f0f0;
+      border-radius: 999px;
+      padding: 4px 10px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 0;
+    }
+    .list-selectors input[type="checkbox"] {
+      margin: 0;
+    }
+    .floating-next-btn {
+      position: absolute;
+      padding: 10px 14px;
+      border-radius: 50%;
+      font-size: 20px;
+      bottom: 20px;
+      right: 20px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+      background: #1e88e5;
+      color: white;
+      user-select: none;
+      touch-action: none;
+    }
+    .quiz-question {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .quiz-options button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      margin-bottom: 8px;
+    }
+    .quiz-status {
+      margin-top: 8px;
+      font-size: 14px;
+    }
+    .correct {
+      color: #2e7d32;
+      font-weight: 600;
+    }
+    .wrong {
+      color: #c62828;
+      font-weight: 600;
+    }
+    .quiz-back-btn {
+      margin-top: 10px;
+    }
+    .small-help {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+    .editable-label {
+      display: inline-block;
+      border-bottom: 1px dashed transparent;
+      padding-bottom: 1px;
+      cursor: text;
+      min-width: 40px;
+    }
+    .editable-label:focus {
+      outline: none;
+      border-color: #bbb;
+    }
+    .list-block {
+      margin-bottom: 16px;
+    }
+    .list-title {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    /* Küçük ekranlar için ufak düzenlemeler */
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 18px;
+      }
+      main {
+        margin-top: 12px;
+      }
+      .card {
+        padding: 12px 14px;
+      }
+      .flashcard-face {
+        padding: 30px 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Kelime Çalışma Uygulamam</h1>
+</header>
+<main>
+  <!-- Sekmeler -->
+  <div class="card">
+    <div class="tabs">
+      <button class="active" data-tab="list">Liste</button>
+      <button data-tab="flashcard">Flash Card</button>
+      <button data-tab="quiz">Oyun</button>
+    </div>
+  </div>
+
+  <!-- Yeni kelime ekle -->
+  <div class="card" id="addWordCard">
+    <h2>Yeni kelime ekle</h2>
+    <div>
+      <label for="targetInput">
+        <span class="editable-label" data-label-key="target" contenteditable="true"></span>
+      </label>
+      <input id="targetInput" type="text" placeholder="Beispiel" />
+    </div>
+    <div>
+      <label for="knownInput">
+        <span class="editable-label" data-label-key="known" contenteditable="true"></span>
+      </label>
+      <input id="knownInput" type="text" placeholder="örnek" />
+    </div>
+    <div>
+      <label for="listSelectForAdd">Hangi listeye eklensin?</label>
+      <select id="listSelectForAdd"></select>
+    </div>
+    <button class="primary" id="addBtn">Listeye ekle</button>
+    <button class="secondary" id="clearAllBtn">Tüm kelimeleri sil</button>
+    <div id="addMsg" style="margin-top:8px;font-size:13px;"></div>
+  </div>
+
+  <!-- Liste yönetimi -->
+  <div class="card" id="listsCard">
+    <h2>Listeler</h2>
+    <button class="secondary" id="addListBtn">Yeni liste ekle</button>
+    <div id="listsManageArea" class="small-help" style="margin-top:8px;">
+      Liste adlarını burada değiştirebilirsin.
+    </div>
+  </div>
+
+  <!-- Liste sekmesi -->
+  <div class="card tab-content" id="tab-list">
+    <h2>Kelime listelerim</h2>
+    <div id="listContainer"></div>
+  </div>
+
+  <!-- Flashcard sekmesi -->
+  <div class="card tab-content" id="tab-flashcard" style="display:none;">
+    <h2>Flash card modu</h2>
+    <p style="font-size:13px;">
+      Kartın önü: Hedef dil<br/>
+      Kartın arkası: Bildiğim dil
+    </p>
+    <div>
+      <div class="list-selectors" id="flashListSelectors"></div>
+      <p class="small-help">Hiçbirini seçmezsen tüm listeler kullanılır.</p>
+    </div>
+    <div id="flashcardArea"></div>
+    <button class="primary floating-next-btn" id="flashNextBtn" title="Sonraki kart">
+      ➡
+    </button>
+  </div>
+
+  <!-- Quiz sekmesi -->
+  <div class="card tab-content" id="tab-quiz" style="display:none;">
+    <h2>Oyun modu (çoktan seçmeli)</h2>
+    <p style="font-size:13px;">
+      Üstte hedef dilde kelime, altta bildiğin dilde anlamlar arasından doğru olanı seç.
+      <br/>Doğru da yanlış da olsa, 1 saniye sonra yeni soru gelir.
+    </p>
+    <div>
+      <div class="list-selectors" id="quizListSelectors"></div>
+      <p class="small-help">Hiçbirini seçmezsen tüm listeler kullanılır.</p>
+    </div>
+    <div id="quizArea"></div>
+    <div class="quiz-status" id="quizStatus"></div>
+  </div>
+</main>
+
+<script>
+  const STORAGE_KEY = "my_vocab_app_v3";
+
+  function createDefaultState() {
+    const now = Date.now();
+    return {
+      labelNames: {
+        target: "Hedef dil",
+        known: "Bildigim dil"
+      },
+      lists: [
+        { id: now, name: "Liste 1", words: [] },
+        { id: now + 1, name: "Liste 2", words: [] }
+      ],
+      flashNextPos: null
+    };
+  }
+
+  function migrateLegacy(raw) {
+    if (Array.isArray(raw)) {
+      const now = Date.now();
+      return {
+        labelNames: {
+          target: "Hedef dil",
+          known: "Bildigim dil"
+        },
+        lists: [
+          {
+            id: now,
+            name: "Liste 1",
+            words: raw.map((w, idx) => ({
+              id: now + idx + 1,
+              target: w.de || w.source || "",
+              known: w.tr || w.target1 || w.en || w.target2 || ""
+            }))
+          }
+        ],
+        flashNextPos: null
+      };
+    }
+    if (raw && raw.languageNames && Array.isArray(raw.lists)) {
+      return {
+        labelNames: {
+          target: "Hedef dil",
+          known: "Bildigim dil"
+        },
+        lists: raw.lists.map((l) => ({
+          id: l.id,
+          name: l.name,
+          words: Array.isArray(l.words)
+            ? l.words.map((w) => ({
+                id: w.id,
+                target: w.source || w.de || "",
+                known: w.target1 || w.tr || w.target2 || w.en || ""
+              }))
+            : []
+        })),
+        flashNextPos: raw.flashNextPos || null
+      };
+    }
+    return null;
+  }
+
+  function loadState() {
+    try {
+      const rawStr = localStorage.getItem(STORAGE_KEY);
+      if (!rawStr) return createDefaultState();
+      const data = JSON.parse(rawStr);
+      if (data && data.labelNames && Array.isArray(data.lists)) {
+        if (!data.labelNames.target) data.labelNames.target = "Hedef dil";
+        if (!data.labelNames.known) data.labelNames.known = "Bildigim dil";
+        return data;
+      }
+      const migrated = migrateLegacy(data);
+      if (migrated) return migrated;
+      return createDefaultState();
+    } catch (e) {
+      console.error("loadState error", e);
+      return createDefaultState();
+    }
+  }
+
+  function saveState(state) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  let appState = loadState();
+
+  function escapeHtml(str) {
+    if (!str) return "";
+    return str.replace(/[&<>"']/g, function (m) {
+      return {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[m];
+    });
+  }
+
+  function escapeHtmlAttr(str) {
+    return escapeHtml(str);
+  }
+
+  function getListById(id) {
+    return appState.lists.find((l) => String(l.id) === String(id));
+  }
+
+  // Sekmeler
+  const tabButtons = document.querySelectorAll(".tabs button");
+  const tabContents = document.querySelectorAll(".tab-content");
+  const addWordCard = document.getElementById("addWordCard");
+  const listsCard = document.getElementById("listsCard");
+
+  tabButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      tabButtons.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      const tab = btn.getAttribute("data-tab");
+      tabContents.forEach((c) => {
+        c.style.display = c.id === "tab-" + tab ? "block" : "none";
+      });
+
+      if (tab === "list") {
+        addWordCard.style.display = "block";
+        listsCard.style.display = "block";
+      } else {
+        addWordCard.style.display = "none";
+        listsCard.style.display = "none";
+      }
+    });
+  });
+
+  // Etiket (başlık) düzenleme
+  const labelEditors = document.querySelectorAll(".editable-label");
+
+  function syncLabelEditors() {
+    labelEditors.forEach((span) => {
+      const key = span.getAttribute("data-label-key");
+      span.textContent = appState.labelNames[key] || (key === "target" ? "Hedef dil" : "Bildigim dil");
+    });
+  }
+
+  function updateLabelFromSpan(span) {
+    const key = span.getAttribute("data-label-key");
+    const val = (span.textContent || "").trim();
+    appState.labelNames[key] =
+      val || (key === "target" ? "Hedef dil" : "Bildigim dil");
+    saveState(appState);
+    renderList();
+  }
+
+  function initLabelEditors() {
+    labelEditors.forEach((span) => {
+      span.addEventListener("blur", () => {
+        updateLabelFromSpan(span);
+      });
+      span.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          span.blur();
+        }
+      });
+    });
+    syncLabelEditors();
+  }
+
+  // Liste yönetimi
+  const listSelectForAdd = document.getElementById("listSelectForAdd");
+  const listsManageArea = document.getElementById("listsManageArea");
+
+  function renderListSelectForAdd() {
+    listSelectForAdd.innerHTML = "";
+    appState.lists.forEach((l) => {
+      const opt = document.createElement("option");
+      opt.value = l.id;
+      opt.textContent = l.name;
+      listSelectForAdd.appendChild(opt);
+    });
+  }
+
+  function renderListsManage() {
+    let html = "";
+    appState.lists.forEach((l) => {
+      html += `
+        <div class="list-header-line">
+          <input type="text" class="list-name-input" data-list-id="${l.id}"
+            value="${escapeHtmlAttr(l.name)}" />
+        </div>
+      `;
+    });
+    listsManageArea.innerHTML = html || '<p class="empty-state">Henüz liste yok.</p>';
+
+    listsManageArea
+      .querySelectorAll("input.list-name-input")
+      .forEach((inp) => {
+        inp.addEventListener("change", () => {
+          const id = inp.getAttribute("data-list-id");
+          const list = getListById(id);
+          if (!list) return;
+          list.name = inp.value.trim() || list.name;
+          saveState(appState);
+          renderList();
+          renderListSelectors();
+          renderListSelectForAdd();
+        });
+      });
+  }
+
+  document.getElementById("addListBtn").addEventListener("click", () => {
+    const newId = Date.now();
+    const defaultName = "Liste " + (appState.lists.length + 1);
+    appState.lists.push({ id: newId, name: defaultName, words: [] });
+    saveState(appState);
+    renderListSelectForAdd();
+    renderListsManage();
+    renderList();
+    renderListSelectors();
+  });
+
+  // Kelime ekleme & silme
+  const addMsg = document.getElementById("addMsg");
+  document.getElementById("addBtn").addEventListener("click", () => {
+    const targetInputEl = document.getElementById("targetInput");
+    const knownInputEl = document.getElementById("knownInput");
+
+    const target = targetInputEl.value.trim();
+    const known = knownInputEl.value.trim();
+    const listId = listSelectForAdd.value;
+
+    if (!target) {
+      addMsg.textContent = "Hedef dil alanı boş olamaz.";
+      addMsg.style.color = "#c62828";
+      return;
+    }
+
+    const list = getListById(listId);
+    if (!list) {
+      addMsg.textContent = "Geçersiz liste.";
+      addMsg.style.color = "#c62828";
+      return;
+    }
+
+    const newWord = {
+      id: Date.now(),
+      target,
+      known
+    };
+    list.words.push(newWord);
+    saveState(appState);
+
+    targetInputEl.value = "";
+    knownInputEl.value = "";
+    addMsg.textContent = "Kelime listeye eklendi ✅";
+    addMsg.style.color = "#2e7d32";
+
+    renderList();
+    renderFlashcard();
+    newQuizQuestion(true);
+  });
+
+  document.getElementById("clearAllBtn").addEventListener("click", () => {
+    if (confirm("Tüm listelerdeki kelimeleri silmek istediğine emin misin?")) {
+      appState.lists.forEach((l) => (l.words = []));
+      saveState(appState);
+      renderList();
+      document.getElementById("flashcardArea").innerHTML =
+        '<p class="empty-state">Önce listelere birkaç kelime eklemelisin.</p>';
+      document.getElementById("quizArea").innerHTML =
+        '<p class="empty-state">Oyun için en az 2 kelime olmalı.</p>';
+      document.getElementById("quizStatus").textContent = "";
+    }
+  });
+
+  // Liste görünümü (açılır / kapanır)
+  function renderList() {
+    const container = document.getElementById("listContainer");
+    if (!appState.lists.length) {
+      container.innerHTML = '<p class="empty-state">Henüz liste yok.</p>';
+      return;
+    }
+
+    let html = "";
+    appState.lists.forEach((list) => {
+      const collapsed = !!list.collapsed;
+      html += `<div class="list-block" data-list-id="${list.id}">
+        <h3 class="list-title">${escapeHtml(list.name)}</h3>
+        <div class="list-body" style="display:${collapsed ? "none" : "block"};">`;
+      if (!list.words.length) {
+        html += '<p class="empty-state">Bu listede henüz kelime yok.</p>';
+      } else {
+        html +=
+          "<table><thead><tr>" +
+          `<th>#</th><th>${escapeHtml(appState.labelNames.target)}</th>` +
+          `<th>${escapeHtml(appState.labelNames.known)}</th>` +
+          "</tr></thead><tbody>";
+        list.words.forEach((w, i) => {
+          html += `<tr>
+            <td>${i + 1}</td>
+            <td>${escapeHtml(w.target)}</td>
+            <td>${escapeHtml(w.known)}</td>
+          </tr>`;
+        });
+        html += "</tbody></table>";
+      }
+      html += "</div></div>";
+    });
+
+    container.innerHTML = html;
+
+    container.querySelectorAll(".list-title").forEach((titleEl) => {
+      titleEl.addEventListener("click", () => {
+        const block = titleEl.closest(".list-block");
+        const id = block.getAttribute("data-list-id");
+        const body = block.querySelector(".list-body");
+        const list = getListById(id);
+        if (!list || !body) return;
+        const isHidden = body.style.display === "none";
+        body.style.display = isHidden ? "block" : "none";
+        list.collapsed = !isHidden;
+        saveState(appState);
+      });
+    });
+
+    container.querySelectorAll(".list-body").forEach((bodyEl) => {
+      bodyEl.addEventListener("dblclick", () => {
+        const block = bodyEl.closest(".list-block");
+        const id = block.getAttribute("data-list-id");
+        const list = getListById(id);
+        if (!list) return;
+        bodyEl.style.display = "none";
+        list.collapsed = true;
+        saveState(appState);
+      });
+    });
+  }
+
+  // Liste seçiciler
+  const flashListSelectors = document.getElementById("flashListSelectors");
+  const quizListSelectors = document.getElementById("quizListSelectors");
+
+  function renderListSelectors() {
+    function buildSelectors(targetEl) {
+      let html = "";
+      appState.lists.forEach((l) => {
+        html += `
+          <label>
+            <input type="checkbox" data-list-id="${l.id}" />
+            <span>${escapeHtml(l.name)}</span>
+          </label>
+        `;
+      });
+      targetEl.innerHTML = html;
+    }
+
+    buildSelectors(flashListSelectors);
+    buildSelectors(quizListSelectors);
+  }
+
+  function getSelectedListIds(from) {
+    const boxContainer =
+      from === "flash" ? flashListSelectors : quizListSelectors;
+    const checked = [
+      ...boxContainer.querySelectorAll('input[type="checkbox"]:checked')
+    ].map((c) => c.getAttribute("data-list-id"));
+    if (checked.length) return checked;
+    return appState.lists.map((l) => String(l.id));
+  }
+
+  function getWordsFromSelectedLists(from) {
+    const ids = getSelectedListIds(from);
+    let collected = [];
+    ids.forEach((id) => {
+      const list = getListById(id);
+      if (list) collected = collected.concat(list.words);
+    });
+    return collected;
+  }
+
+  // Flashcard modu
+  function pickRandomWordForFlash() {
+    const words = getWordsFromSelectedLists("flash");
+    if (!words.length) return null;
+    const i = Math.floor(Math.random() * words.length);
+    return words[i];
+  }
+
+  function renderFlashcard() {
+    const area = document.getElementById("flashcardArea");
+    const word = pickRandomWordForFlash();
+
+    if (!word) {
+      area.innerHTML =
+        '<p class="empty-state">Önce listelere birkaç kelime eklemelisin.</p>';
+      return;
+    }
+
+    const frontText = word.target;
+    const backText = word.known || "(Anlam girilmemiş)";
+
+    area.innerHTML = `
+      <div class="flashcard" id="flashcard">
+        <div class="flashcard-face flashcard-front">
+          <span>${escapeHtml(frontText)}</span>
+          <small>Kartı çevirmek için tıkla</small>
+        </div>
+        <div class="flashcard-face flashcard-back">
+          <span>${escapeHtml(backText)}</span>
+          <small>Kartı çevirmek için tıkla</small>
+        </div>
+      </div>
+    `;
+
+    const cardEl = document.getElementById("flashcard");
+    let flipped = false;
+    cardEl.onclick = () => {
+      flipped = !flipped;
+      cardEl.classList.toggle("flipped", flipped);
+    };
+  }
+
+  // Draggable sonraki kart butonu
+  const flashNextBtn = document.getElementById("flashNextBtn");
+  const flashTab = document.getElementById("tab-flashcard");
+  let isDraggingFlashBtn = false;
+  let dragOffsetX = 0;
+  let dragOffsetY = 0;
+  let draggedRecently = false;
+
+  function applyFlashNextPos() {
+    const pos = appState.flashNextPos;
+    if (!pos) return;
+    flashNextBtn.style.left = pos.left + "px";
+    flashNextBtn.style.top = pos.top + "px";
+    flashNextBtn.style.right = "auto";
+    flashNextBtn.style.bottom = "auto";
+  }
+
+  flashNextBtn.addEventListener("mousedown", (e) => {
+    isDraggingFlashBtn = true;
+    draggedRecently = false;
+    const btnRect = flashNextBtn.getBoundingClientRect();
+    dragOffsetX = e.clientX - btnRect.left;
+    dragOffsetY = e.clientY - btnRect.top;
+    e.preventDefault();
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!isDraggingFlashBtn) return;
+    const rect = flashTab.getBoundingClientRect();
+    let x = e.clientX - rect.left - dragOffsetX;
+    let y = e.clientY - rect.top - dragOffsetY;
+
+    const maxX = rect.width - flashNextBtn.offsetWidth;
+    const maxY = rect.height - flashNextBtn.offsetHeight;
+    x = Math.max(0, Math.min(maxX, x));
+    y = Math.max(0, Math.min(maxY, y));
+
+    flashNextBtn.style.left = x + "px";
+    flashNextBtn.style.top = y + "px";
+    flashNextBtn.style.right = "auto";
+    flashNextBtn.style.bottom = "auto";
+
+    appState.flashNextPos = { left: x, top: y };
+    saveState(appState);
+    draggedRecently = true;
+  });
+
+  document.addEventListener("mouseup", () => {
+    if (isDraggingFlashBtn) {
+      isDraggingFlashBtn = false;
+      if (draggedRecently) {
+        setTimeout(() => {
+          draggedRecently = false;
+        }, 200);
+      }
+    }
+  });
+
+  flashNextBtn.addEventListener("click", () => {
+    if (draggedRecently) return;
+    renderFlashcard();
+  });
+
+  flashListSelectors.addEventListener("change", () => {
+    renderFlashcard();
+  });
+
+  // Quiz modu
+  let currentQuestionData = null;
+  let prevQuestionData = null;
+  let quizAdvanceTimeout = null;
+
+  const quizArea = document.getElementById("quizArea");
+  const quizStatus = document.getElementById("quizStatus");
+
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+
+  function buildQuestionFromWords(words) {
+    const filtered = words.filter(
+      (w) => w.known && w.known.trim().length > 0
+    );
+    if (filtered.length < 2) return null;
+
+    const questionWord =
+      filtered[Math.floor(Math.random() * filtered.length)];
+    const correct = questionWord.known;
+
+    const allMeanings = filtered.map((w) => w.known);
+    let optionsSet = new Set();
+    optionsSet.add(correct);
+    while (optionsSet.size < 4 && optionsSet.size < allMeanings.length) {
+      const candidate =
+        allMeanings[Math.floor(Math.random() * allMeanings.length)];
+      optionsSet.add(candidate);
+    }
+    const options = Array.from(optionsSet);
+    shuffle(options);
+
+    return {
+      word: questionWord,
+      correct,
+      options
+    };
+  }
+
+  function renderQuizQuestion(data) {
+    if (!data) {
+      quizArea.innerHTML =
+        '<p class="empty-state">Oyun için en az 2 kelimenin bildiğin dilde anlamı olmalı.</p>';
+      quizStatus.textContent = "";
+      return;
+    }
+
+    let html = `
+      <div class="quiz-question">${escapeHtml(data.word.target)}</div>
+      <div class="quiz-options">
+    `;
+    data.options.forEach((opt) => {
+      html += `<button class="secondary" data-answer="${escapeHtmlAttr(
+        opt
+      )}">${escapeHtml(opt)}</button>`;
+    });
+    html += `</div>
+      <button class="secondary quiz-back-btn" id="quizBackBtn" title="Önceki soru">← Önceki soru</button>
+    `;
+    quizArea.innerHTML = html;
+    quizStatus.textContent = "";
+
+    const optionButtons = quizArea.querySelectorAll("button[data-answer]");
+    optionButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const selected = btn.getAttribute("data-answer");
+        const isCorrect = selected === data.correct;
+        if (isCorrect) {
+          quizStatus.innerHTML = `<span class="correct">Doğru! 🎉</span>`;
+        } else {
+          quizStatus.innerHTML = `<span class="wrong">Yanlış 😔 Doğru cevap: ${escapeHtml(
+            data.correct
+          )}</span>`;
+        }
+        if (quizAdvanceTimeout) clearTimeout(quizAdvanceTimeout);
+        quizAdvanceTimeout = setTimeout(() => {
+          newQuizQuestion(true);
+        }, 1000);
+      });
+    });
+
+    const quizBackBtn = document.getElementById("quizBackBtn");
+    quizBackBtn.addEventListener("click", () => {
+      if (!prevQuestionData) return;
+      if (quizAdvanceTimeout) clearTimeout(quizAdvanceTimeout);
+      const temp = currentQuestionData;
+      currentQuestionData = prevQuestionData;
+      prevQuestionData = temp;
+      renderQuizQuestion(currentQuestionData);
+    });
+  }
+
+  function newQuizQuestion(pushHistory) {
+    const words = getWordsFromSelectedLists("quiz");
+    const q = buildQuestionFromWords(words);
+    if (!q) {
+      currentQuestionData = null;
+      renderQuizQuestion(null);
+      return;
+    }
+    if (pushHistory && currentQuestionData) {
+      prevQuestionData = currentQuestionData;
+    }
+    currentQuestionData = q;
+    renderQuizQuestion(currentQuestionData);
+  }
+
+  quizListSelectors.addEventListener("change", () => {
+    if (quizAdvanceTimeout) clearTimeout(quizAdvanceTimeout);
+    newQuizQuestion(false);
+  });
+
+  // Başlangıç
+  initLabelEditors();
+  renderListSelectForAdd();
+  renderListsManage();
+  renderListSelectors();
+  renderList();
+  renderFlashcard();
+  applyFlashNextPos();
+  newQuizQuestion(false);
+</script>
+</body>
+</html>
